@@ -120,7 +120,7 @@
         "@types/sinon": "^7.0.11",
         "@types/webpack": "^4.4.26",
         "@types/webpack-env": "^1.13.9",
-        "@typescript-eslint/eslint-plugin": "^2.24.0",
+        "@typescript-eslint/eslint-plugin": "2.25.0",
         "@typescript-eslint/parser": "^2.24.0",
         "@vaadin/router": "^1.2.0",
         "@webcomponents/webcomponentsjs": "^2.2.0",
