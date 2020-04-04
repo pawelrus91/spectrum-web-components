@@ -24,10 +24,10 @@ export default {
 export const Default = (): TemplateResult => {
     return html`
         <sp-tab-list selected="1">
-            <sp-tab label="Tab 1" value="1"></sp-tab>
             <sp-tab label="Tab 2" value="2"></sp-tab>
             <sp-tab label="Tab 3" value="3"></sp-tab>
             <sp-tab label="Tab 4" value="4"></sp-tab>
+            <sp-tab label="Really Long Name" value="1" selected></sp-tab>
         </sp-tab-list>
     `;
 };

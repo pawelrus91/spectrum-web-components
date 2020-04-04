@@ -1,0 +1,63 @@
+---
+permalink: 'rollup-files.js'
+---
+import html from '@open-wc/rollup-plugin-html';
+import posthtml from 'posthtml';
+import spectrumMarkdown from '../src/utils/posthtml-spectrum-docs-markdown';
+import load, { modulepreload, prefetch } from '../src/utils/posthtml-loading';
+
+const transform = (html, args) => {
+    const modulepreloads = args.bundle.entrypoints.reduce((acc, entry) => {
+        return [
+            ...acc,
+            ...entry.chunk.imports,
+        ]
+    }, []);
+    return posthtml()
+        .use(
+            spectrumMarkdown,
+            modulepreload(modulepreloads),
+            load(['https://use.typekit.net/evk7lzt.css'], 'preload', 'style')
+        )
+        .process(html, { sync: true })
+        .html;
+}
+
+const options = {
+    transform,
+    minify: {
+        collapseWhitespace: true,
+        conservativeCollapse: true,
+        removeComments: true,
+        caseSensitive: true,
+        minifyCSS: true,
+    }
+}
+
+export default [
+    html({
+        ...options,
+        inputPath: './_site/index.html',
+    }),
+{% for component in collections.components %}
+    html({
+        ...options,
+        name: '{{ component.data.permalink }}',
+        inputPath: './_site/{{ component.data.permalink }}',
+    }),
+{% endfor %}
+{% for component in collections.componentsApi %}
+    html({
+        ...options,
+        name: '{{ component.data.permalink }}',
+        inputPath: './_site/{{ component.data.permalink }}',
+    }),
+{% endfor %}
+{% for guide in collections.guides %}
+    html({
+        ...options,
+        name: '{{ guide.data.permalink }}',
+        inputPath: './_site/{{ guide.data.permalink }}',
+    }),
+{% endfor %}
+];

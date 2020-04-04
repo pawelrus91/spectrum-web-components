@@ -132,6 +132,9 @@ export class SideNavItem extends Focusable {
                 data-level="${this.depth}"
                 @click="${this.handleClick}"
                 id="itemLink"
+                aria-current=${ifDefined(
+                    this.selected && this.href ? 'page' : undefined
+                )}
             >
                 ${this.label}
             </a>

@@ -1,0 +1,33 @@
+<sp-sidenav manage-tab-index slot="side-nav" value="{{ componentName }}">
+    <sp-sidenav-item
+        label="Components"
+        expanded
+        multiLevel
+    >
+        {% for component in collections.components %}
+            <sp-sidenav-item
+                label="{{ component.data.displayName }}"
+                href="{{ component.data.permalink }}"
+                value="{{ component.data.componentName }}"
+            ></sp-sidenav-item>
+        {% endfor %}
+    </sp-sidenav-item>
+    <sp-sidenav-item
+        label="Contributing"
+        expanded
+        multiLevel
+    >
+        {% for guide in collections.guides %}
+            <sp-sidenav-item
+                label="{{ guide.data.displayName }}"
+                href="{{ guide.data.permalink }}"
+                value="{{ guide.data.slug }}"
+            ></sp-sidenav-item>
+        {% endfor %}
+    </sp-sidenav-item>
+    <sp-sidenav-item
+        class="spectrum-web"
+        label="Spectrum"
+        href="https://spectrum.adobe.com/"
+    ></sp-sidenav-item>
+</sp-sidenav>

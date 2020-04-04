@@ -211,12 +211,16 @@ export class TabList extends Focusable {
         this.updateSelectionIndicator();
     }
 
-    private async updateSelectionIndicator(): Promise<void> {
+    private updateSelectionIndicator = async (): Promise<void> => {
         const selectedElement = this.querySelector('[selected]') as Tab;
         if (!selectedElement) {
             return;
         }
-        await selectedElement.updateComplete;
+        await Promise.all([
+            await selectedElement.updateComplete,
+            await ((document as unknown) as { fonts: { ready: Promise<void> } })
+                .fonts.ready,
+        ]);
         const tabBoundingClientRect = selectedElement.getBoundingClientRect();
         const parentBoundingClientRect = this.getBoundingClientRect();
 
@@ -233,5 +237,39 @@ export class TabList extends Focusable {
 
             this.selectionIndicatorStyle = `transform: translateY(${offset}px) scaleY(${height});`;
         }
+    };
+
+    public connectedCallback(): void {
+        super.connectedCallback();
+        if ('fonts' in document) {
+            ((document as unknown) as {
+                fonts: {
+                    addEventListener: (
+                        name: string,
+                        callback: () => void
+                    ) => void;
+                };
+            }).fonts.addEventListener(
+                'loadingdone',
+                this.updateSelectionIndicator
+            );
+        }
+    }
+
+    public disconnectedCallback(): void {
+        if ('fonts' in document) {
+            ((document as unknown) as {
+                fonts: {
+                    removeEventListener: (
+                        name: string,
+                        callback: () => void
+                    ) => void;
+                };
+            }).fonts.removeEventListener(
+                'loadingdone',
+                this.updateSelectionIndicator
+            );
+        }
+        super.disconnectedCallback();
     }
 }

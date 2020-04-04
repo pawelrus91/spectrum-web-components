@@ -1,5 +1,5 @@
 /*
-Copyright 2020 Adobe. All rights reserved.
+Copyright 2019 Adobe. All rights reserved.
 This file is licensed to you under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License. You may obtain a copy
 of the License at http://www.apache.org/licenses/LICENSE-2.0
@@ -18,14 +18,17 @@ import {
     PropertyValues,
 } from 'lit-element';
 import './side-nav.js';
+import { SideNav } from './side-nav.js';
 import layoutStyles from './layout.css';
+import './code-example.js';
+import { CodeExample } from './code-example.js';
 import '@spectrum-web-components/theme';
 import { Color, Scale } from '@spectrum-web-components/theme';
 import { Dropdown } from '@spectrum-web-components/dropdown';
 import '@spectrum-web-components/dropdown';
 import '@spectrum-web-components/menu';
 import '@spectrum-web-components/menu-item';
-import './code-example';
+import '@spectrum-web-components/link';
 
 const SWC_THEME_COLOR_KEY = 'swc-docs:theme:color';
 const SWC_THEME_SCALE_KEY = 'swc-docs:theme:scale';
@@ -40,6 +43,8 @@ const DEFAULT_SCALE = (window.localStorage
     ? localStorage.getItem(SWC_THEME_SCALE_KEY) || SCALE_MEDIUM
     : SCALE_MEDIUM) as Scale;
 
+const isNarrowMediaQuery = matchMedia('screen and (max-width: 960px)');
+
 export class LayoutElement extends LitElement {
     public static get styles(): CSSResultArray {
         return [layoutStyles];
@@ -51,15 +56,18 @@ export class LayoutElement extends LitElement {
     @property({ type: Boolean })
     public open = false;
 
+    @property({ type: Boolean, attribute: false })
+    private isNarrow = isNarrowMediaQuery.matches;
+
     @property({ attribute: false })
     public scale: Scale = DEFAULT_SCALE;
 
+    handleMatchMediaChange = (event: MediaQueryListEvent) => {
+        this.isNarrow = event.matches;
+    };
+
     toggleNav() {
         this.open = !this.open;
-    }
-
-    closeNav() {
-        this.open = false;
     }
 
     private updateColor(event: Event) {
@@ -81,9 +89,13 @@ export class LayoutElement extends LitElement {
         next.click();
     }
 
+    public focus() {
+        (this.shadowRoot!.querySelector('docs-side-nav')! as SideNav).focus();
+    }
+
     renderContent() {
         return html`
-            <div></div>
+            <slot></slot>
         `;
     }
 
@@ -136,11 +148,17 @@ export class LayoutElement extends LitElement {
                 <div id="body">
                     <docs-side-nav
                         id="side-nav"
-                        ?inert=${!this.open}
+                        ?inert=${this.isNarrow && !this.open}
                         ?open=${this.open}
-                        @close=${this.closeNav}
-                    ></docs-side-nav>
-                    <main id="layout-content" ?inert=${this.open} role="main">
+                        @close=${this.toggleNav}
+                    >
+                        <slot name="side-nav"></slot>
+                    </docs-side-nav>
+                    <main
+                        id="layout-content"
+                        ?inert=${this.isNarrow && this.open}
+                        role="main"
+                    >
                         <div id="page">
                             <div class="manage-theme">
                                 <label @click=${this.onClickLabel}>Theme</label>
@@ -194,14 +212,45 @@ export class LayoutElement extends LitElement {
     updated(changes: PropertyValues) {
         if (changes.has('color') && window.localStorage) {
             localStorage.setItem(SWC_THEME_COLOR_KEY, this.color);
+            const examples = [
+                ...this.querySelectorAll('code-example'),
+            ] as CodeExample[];
+            examples.forEach((example) => {
+                example.codeTheme =
+                    this.color === 'dark' || this.color === 'darkest'
+                        ? 'dark'
+                        : 'light';
+            });
         }
         if (changes.has('scale') && window.localStorage) {
             localStorage.setItem(SWC_THEME_SCALE_KEY, this.scale);
         }
+        if (changes.has('open') && this.open) {
+            this.focus();
+        }
     }
 
-    // connectedCallback() {
-    //     super.connectedCallback();
-    //     import();
-    // }
+    connectedCallback() {
+        super.connectedCallback();
+        isNarrowMediaQuery.addEventListener(
+            'change',
+            this.handleMatchMediaChange
+        );
+    }
+
+    disconnectedCallback() {
+        isNarrowMediaQuery.removeEventListener(
+            'change',
+            this.handleMatchMediaChange
+        );
+    }
+
+    protected firstUpdated(): void {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = 'https://use.typekit.net/evk7lzt.css';
+        document.head.append(link);
+    }
 }
+
+customElements.define('docs-page', LayoutElement);

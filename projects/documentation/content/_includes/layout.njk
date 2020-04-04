@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    {% include "partials/meta-info.njk" %}
+    <link rel="preconnect" href="https://use.typekit.net" />
+    <link rel="preconnect" href="https://p.typekit.net" />
+    <link rel="preconnect" href="https://storage.googleapis.com" />
+    <link rel="stylesheet" href="markdown.css" />
+    {% block head %}
+    {% endblock %}
+    <script>window.importShim=t=>import(t.startsWith(".")?new URL(t,document.baseURI):t);</script>
+  </head>
+  <body>
+    {% block content %}
+      {{ content | safe }}
+    {% endblock %}
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('sw.js');
+        });
+      }
+    </script>
+  </body>
+</html>
